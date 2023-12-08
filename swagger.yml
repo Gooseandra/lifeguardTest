@@ -7,20 +7,44 @@ info:
 schemes:
   - http
 paths:
+  /login:
+    post:
+      operationId: login
+      parameters:
+        - name: body
+          in: body
+          schema:
+            properties:
+              name:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        404:
+          description: Неправильные пароль или юзер
+        500:
+          description: Ошибка сервера
   /users:
     get:
       operationId: listUsers
       parameters:
+        - name: session
+          in: header
+          type: string
         - name: count
           in: query
           type: integer
           format: uint32
           default: 100
-        - name: start
+        - name: skip
           in: query
           type: integer
           format: uint64
-          default: 1
+          default: 0
       responses:
         200:
           description: вввв
@@ -37,10 +61,14 @@ paths:
         400:
           description: плохой запрос
         500:
-          description: неизвестная ошибка
+          description: unknown error
     post:
       operationId: createUser
       parameters:
+        - name: session
+          in: header
+          type: string
+          required: true
         - name: data
           in: body
           schema:
@@ -52,6 +80,8 @@ paths:
             type: integer
             format: uint64
         400:
+          description: плохой запрос
+        404:
           description: плохой запрос
         500:
           description: неизвестная ошибка

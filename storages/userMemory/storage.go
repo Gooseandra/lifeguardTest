@@ -6,12 +6,13 @@ import (
 )
 
 type (
-	storage struct {
+	Storage struct {
 		first *storageRow
 		//list     []*storages.User
-		dict     storageRowsById
-		mutex    sync.Mutex
-		sequence storages.UserID
+		dictById   storageRowsById
+		dictByName storageRowsByName
+		mutex      sync.Mutex
+		sequence   storages.UserID
 	}
 
 	storageRow struct {
@@ -22,11 +23,24 @@ type (
 	}
 
 	storageRowsById map[storages.UserID]*storageRow
+
+	storageRowsByName map[storages.UserName]*storageRow
 )
 
-func NewStorage() *storage { return &storage{dict: storageRowsById{}} }
+func NewStorage() *Storage {
+	return &Storage{dictById: storageRowsById{}, dictByName: storageRowsByName{}}
+}
 
-func (s storage) List(i uint64, c uint32) ([]storages.User, error) {
+func (s Storage) ByName(n storages.UserName) (storages.User, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if u, o := s.dictByName[n]; o {
+		return u, nil
+	}
+	return nil, storages.UserNameMissingError(n)
+}
+
+func (s Storage) List(i uint64, c uint32) ([]storages.User, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	e, r := s.first, make([]storages.User, 0, c)
@@ -46,15 +60,18 @@ func (s storage) List(i uint64, c uint32) ([]storages.User, error) {
 	return r, nil
 }
 
-func (s *storage) New(n storages.UserName, p storages.UserPassword) (storages.User, error) {
+func (s *Storage) New(n storages.UserName, p storages.UserPassword) (storages.User, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.sequence++
-	if r, o := s.dict[s.sequence]; o {
-		return r, storages.UserExistError(s.sequence)
+	if r, o := s.dictById[s.sequence]; o {
+		return r, storages.UserIdExistError(s.sequence)
+	}
+	if r, o := s.dictByName[n]; o {
+		return r, storages.UserNameExistError(n)
 	}
 	r := &storageRow{iD: s.sequence, name: n, password: p}
-	s.dict[s.sequence] = r
+	s.dictById[s.sequence], s.dictByName[n] = r, r
 	l := &s.first
 	for {
 		if *l == nil {
@@ -71,8 +88,8 @@ func (s *storage) New(n storages.UserName, p storages.UserPassword) (storages.Us
 	return r, nil
 }
 
-func (r storageRow) ID() storages.UserID { return r.iD }
+func (r *storageRow) ID() storages.UserID { return r.iD }
 
-func (r storageRow) Name() storages.UserName { return r.name }
+func (r *storageRow) Name() storages.UserName { return r.name }
 
-func (r storageRow) Password() storages.UserPassword { return r.password }
+func (r *storageRow) Password() storages.UserPassword { return r.password }
