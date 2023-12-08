@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/google/uuid"
 	"strconv"
 	"swagger/restapi/operations"
 	"swagger/services"
@@ -44,17 +42,17 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 		log.BadRequest("data.password is null")
 		return operations.NewCreateUserBadRequest()
 	}
-	id, fail := uuid.Parse(params.Session)
-	if fail != nil {
-		log.BadRequest("parse session id: %v", params.Session)
-		return operations.NewCreateUserBadRequest()
-	}
-	session := c.sessions.Get(id)
-	if session != nil {
-		log.BadRequest("session not found: %v", id)
-		return operations.NewCreateUserBadRequest()
-	}
-	fmt.Println("createUser from", session.User().Name())
+	//id, fail := uuid.Parse(params.Session)
+	//if fail != nil {
+	//	log.BadRequest("parse session id: %v", params.Session)
+	//	return operations.NewCreateUserBadRequest()
+	//}
+	//session := c.sessions.Get(id)
+	//if session != nil {
+	//	log.BadRequest("session not found: %v", id)
+	//	return operations.NewCreateUserBadRequest()
+	//}
+	//fmt.Println("createUser from", session.User().Name())
 	row, fail := c.users.New(*params.Data.Name, *params.Data.Password)
 	switch {
 	case fail == nil:

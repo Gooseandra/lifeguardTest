@@ -37,6 +37,7 @@ func main() {
 
 	sessionService := services.NewSessions(logService, userService, time.Hour)
 
+	api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
 	api.LoginHandler = handlers.NewLogin(logService, &sessionService, userService)
 	api.CreateUserHandler = handlers.NewCreateUser(logService, &sessionService, userService)
 	api.ListUsersHandler = handlers.NewListUser(logService, &sessionService, userService)

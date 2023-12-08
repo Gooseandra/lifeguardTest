@@ -7,6 +7,31 @@ info:
 schemes:
   - http
 paths:
+  /events:
+    post:
+      operationId: createEvent
+      parameters:
+        - name: body
+          in: body
+          schema:
+            properties:
+              name:
+                type: string
+              timeStart:
+                type: string
+              timeFinish:
+                  type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        400:
+          description: BadRequest
+        404:
+          description: NotFound
+        500:
+          description: UnknownError
   /login:
     post:
       operationId: login
@@ -68,7 +93,6 @@ paths:
         - name: session
           in: header
           type: string
-          required: true
         - name: data
           in: body
           schema:
