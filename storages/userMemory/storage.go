@@ -31,11 +31,11 @@ func NewStorage() *Storage {
 	return &Storage{dictById: storageRowsById{}, dictByName: storageRowsByName{}}
 }
 
-func (s Storage) ByName(n storages.UserName) (storages.User, error) {
+func (s *Storage) ByName(n storages.UserName) (storages.User, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	if u, o := s.dictByName[n]; o {
-		return u, nil
+	if user, ok := s.dictByName[n]; ok {
+		return user, nil
 	}
 	return nil, storages.UserNameMissingError(n)
 }
@@ -88,8 +88,8 @@ func (s *Storage) New(n storages.UserName, p storages.UserPassword) (storages.Us
 	return r, nil
 }
 
-func (r *storageRow) ID() storages.UserID { return r.iD }
+func (r storageRow) ID() storages.UserID { return r.iD }
 
-func (r *storageRow) Name() storages.UserName { return r.name }
+func (r storageRow) Name() storages.UserName { return r.name }
 
-func (r *storageRow) Password() storages.UserPassword { return r.password }
+func (r storageRow) Password() storages.UserPassword { return r.password }

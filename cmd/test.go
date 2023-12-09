@@ -37,10 +37,12 @@ func main() {
 
 	sessionService := services.NewSessions(logService, userService, time.Hour)
 
-	api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
+	//api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
 	api.LoginHandler = handlers.NewLogin(logService, &sessionService, userService)
 	api.CreateUserHandler = handlers.NewCreateUser(logService, &sessionService, userService)
+	api.GetUserHandler = handlers.NewGetUser(logService, &sessionService, userService)
 	api.ListUsersHandler = handlers.NewListUser(logService, &sessionService, userService)
+	api.UpdateUserHandler = handlers.NewUpdateUser(logService, &sessionService, userService)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 

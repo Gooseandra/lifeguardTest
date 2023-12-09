@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"strconv"
 	"swagger/restapi/operations"
@@ -9,7 +10,13 @@ import (
 )
 
 type (
-	CreateUser struct {
+	user struct {
+		log      *services.Log
+		sessions *services.Sessions
+		users    *services.Users
+	}
+	CreateUser struct{ user }
+	GetUser    struct {
 		log      *services.Log
 		sessions *services.Sessions
 		users    *services.Users
@@ -19,14 +26,23 @@ type (
 		sessions *services.Sessions
 		users    *services.Users
 	}
+	UpdateUser struct{ user }
 )
 
 func NewCreateUser(l *services.Log, s *services.Sessions, u *services.Users) CreateUser {
-	return CreateUser{log: l, sessions: s, users: u}
+	return CreateUser{user: user{log: l, sessions: s, users: u}}
+}
+
+func NewGetUser(l *services.Log, s *services.Sessions, u *services.Users) GetUser {
+	return GetUser{log: l, sessions: s, users: u}
 }
 
 func NewListUser(l *services.Log, s *services.Sessions, u *services.Users) ListUsers {
 	return ListUsers{log: l, sessions: s, users: u}
+}
+
+func NewUpdateUser(l *services.Log, s *services.Sessions, u *services.Users) UpdateUser {
+	return UpdateUser{user: user{log: l, sessions: s, users: u}}
 }
 
 func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Responder {
@@ -69,6 +85,11 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 	return operations.NewCreateUserInternalServerError()
 }
 
+func (g GetUser) Handle(p operations.GetUserParams) middleware.Responder {
+	fmt.Println("GetUser", p.ID)
+	return operations.NewGetUserOK()
+}
+
 func (l ListUsers) Handle(p operations.ListUsersParams) middleware.Responder {
 	log := l.log.Func("listUsers")
 	if p.Count == nil {
@@ -90,4 +111,9 @@ func (l ListUsers) Handle(p operations.ListUsersParams) middleware.Responder {
 	}
 	log.OK(strconv.Itoa(len(list)))
 	return operations.NewListUsersOK().WithPayload(payload)
+}
+
+func (g UpdateUser) Handle(p operations.UpdateUserParams) middleware.Responder {
+	fmt.Println("UpdateUser", p.ID)
+	return operations.NewUpdateUserOK()
 }
