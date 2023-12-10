@@ -3,15 +3,18 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"swagger/handlers"
 	"swagger/services"
-	"swagger/storages/userMemory"
+	"swagger/storages/userPostgres"
 	"time"
 
 	"github.com/go-openapi/loads"
+	"github.com/go-yaml/yaml"
 	flags "github.com/jessevdk/go-flags"
+	_ "github.com/lib/pq"
 
 	"swagger/restapi"
 	"swagger/restapi/operations"
@@ -21,7 +24,6 @@ import (
 // Make sure not to overwrite this file after you generated it because all your edits would be lost!
 
 func main() {
-
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
 		log.Fatalln(err)
@@ -29,8 +31,27 @@ func main() {
 
 	api := operations.NewMchsAPI(swaggerSpec)
 
-	userStorage := userMemory.NewStorage()
-	userStorage.New("root", "root")
+	var settings Settings
+	bytes, fail := os.ReadFile("db.yml")
+	if fail != nil {
+		log.Println(fail.Error())
+		log.Panic(fail.Error())
+	}
+	fail = yaml.Unmarshal([]byte(bytes), &settings)
+	if fail != nil {
+		log.Panic(fail.Error())
+	}
+	log.Println(settings)
+	db, err := sql.Open(settings.Database.Type, settings.Database.Arguments)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	userStorage := userPostgres.NewStorage(db)
+	if fail != nil {
+		log.Panic(fail.Error())
+	}
+
+	userStorage.New("root", "root", "123")
 
 	logService := services.NewLog()
 	userService := services.NewUsers(userStorage)
@@ -38,6 +59,8 @@ func main() {
 	sessionService := services.NewSessions(logService, userService, time.Hour)
 
 	//api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
+	api.CreateCrewHandler = handlers.NewCreateCrew(logService, &sessionService, crewService)
+	api.ListCrewHandler = handlers.NewListCrew(logService, &sessionService, crewSercvice)
 	api.LoginHandler = handlers.NewLogin(logService, &sessionService, userService)
 	api.CreateUserHandler = handlers.NewCreateUser(logService, &sessionService, userService)
 	api.GetUserHandler = handlers.NewGetUser(logService, &sessionService, userService)

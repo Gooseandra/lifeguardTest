@@ -53,10 +53,10 @@ func (u Users) List(s uint64, c uint32) ([]storages.User, error) {
 	return nil, fmt.Errorf("user serice: %w", err)
 }
 
-func (u Users) New(n, p string) (storages.User, error) {
+func (u Users) New(name storages.UserName, password storages.UserPassword, phone storages.UserPhone) (storages.User, error) {
 	var idExistError storages.UserIdExistError
 	var nameExistError storages.UserNameExistError
-	user, err := u.storage.New(n, p)
+	user, err := u.storage.New(name, password, phone)
 	if err == nil {
 		return user, nil
 	}

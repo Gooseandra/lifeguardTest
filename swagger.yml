@@ -32,6 +32,62 @@ paths:
           description: NotFound
         500:
           description: UnknownError
+  /crews:
+    get:
+      operationId: listCrew
+      parameters:
+        - name: count
+          in: query
+          type: integer
+          format: uint32
+          default: 100
+        - name: skip
+          in: query
+          type: integer
+          format: uint64
+          default: 0
+      responses:
+        200:
+          description: вввв
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: uint64
+                name:
+                  type: string
+                phone:
+                  type: string
+        400:
+          description: Bad request
+        500:
+          description: Unknown error
+    post:
+      operationId: createCrew
+      parameters:
+        - name: body
+          in: body
+          schema:
+            properties:
+              timeStart:
+                type: string
+              leader:
+                type: integer
+              comment:
+                type: string
+            required: [ timeStart, leader ]
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        400:
+          description: Bad request
+        500:
+          description: Unknown error
   /login:
     post:
       operationId: login
@@ -83,6 +139,8 @@ paths:
                   format: uint64
                 name:
                   type: string
+                phone:
+                  type: string
         400:
           description: плохой запрос
         500:
@@ -109,7 +167,7 @@ paths:
           description: плохой запрос
         500:
           description: неизвестная ошибка
-  /users  /{id}:
+  /users/{id}:
     get:
       operationId: getUser
       parameters:
@@ -143,7 +201,10 @@ definitions:
       password:
         type: string
         maxLength: 255
-    required: [ name, password ]
+      phone:
+        type: string
+        maxLength: 11
+    required: [ name, password, phone ]
   error:
     type: object
     required:

@@ -69,7 +69,7 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 	//	return operations.NewCreateUserBadRequest()
 	//}
 	//fmt.Println("createUser from", session.User().Name())
-	row, fail := c.users.New(*params.Data.Name, *params.Data.Password)
+	row, fail := c.users.New(*params.Data.Name, *params.Data.Password, *params.Data.Phone)
 	switch {
 	case fail == nil:
 		log.OK(strconv.FormatUint(row.ID(), 10))
@@ -107,7 +107,7 @@ func (l ListUsers) Handle(p operations.ListUsersParams) middleware.Responder {
 	}
 	payload := make([]*operations.ListUsersOKBodyItems0, len(list))
 	for index, item := range list {
-		payload[index] = &operations.ListUsersOKBodyItems0{ID: item.ID(), Name: item.Name()}
+		payload[index] = &operations.ListUsersOKBodyItems0{ID: item.ID(), Name: item.Name(), Phone: item.Phone()}
 	}
 	log.OK(strconv.Itoa(len(list)))
 	return operations.NewListUsersOK().WithPayload(payload)
