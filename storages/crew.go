@@ -9,6 +9,7 @@ type (
 		Finish() CrewTime
 		Leader() CrewLeader
 		Comment() CrewComment
+		Roaster() CrewRoaster
 	}
 
 	CrewID = uint64
@@ -18,6 +19,8 @@ type (
 	CrewLeader = uint64
 
 	CrewComment = string
+
+	CrewRoaster = []int64
 
 	Crews interface {
 		ByTime(time CrewTime) (Crew, error)

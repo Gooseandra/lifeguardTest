@@ -19,6 +19,7 @@ type (
 		timeFinish storages.CrewTime
 		leader     storages.CrewLeader
 		comment    storages.CrewComment
+		roaster    storages.CrewRoaster
 	}
 )
 
@@ -49,7 +50,7 @@ func (s Storage) List(skip uint64, count uint32) ([]storages.Crew, error) {
 	result := make([]storages.Crew, 0, count)
 	for rows.Next() {
 		var row storageRow
-		err = rows.Scan(&row.id, &row.timeStart, &row.timeFinish, &row.leader, &row.comment)
+		err = rows.Scan(&row.id, &row.timeStart, &row.timeFinish, &row.leader, &row.comment, &row.roaster)
 		if err != nil {
 			return nil, err
 		}
@@ -71,3 +72,5 @@ func (r storageRow) Finish() storages.CrewTime { return r.timeFinish }
 func (r storageRow) Leader() storages.CrewLeader { return r.leader }
 
 func (r storageRow) Comment() storages.CrewComment { return r.comment }
+
+func (r storageRow) Roaster() storages.CrewRoaster { return r.roaster }

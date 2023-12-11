@@ -52,7 +52,7 @@ func main() {
 		log.Panic(fail.Error())
 	}
 
-	userStorage.New("root", "root", "123")
+	//userStorage.New("root", "root", "123")
 
 	crewStorage := crewPostgres.NewStorage(db)
 

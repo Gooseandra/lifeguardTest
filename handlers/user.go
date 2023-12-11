@@ -57,6 +57,21 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 	case params.Data.Password == nil:
 		log.BadRequest("data.password is null")
 		return operations.NewCreateUserBadRequest()
+	case params.Data.Email == nil:
+		log.BadRequest("data.nick is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Data.Surname == nil:
+		log.BadRequest("data.surname is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Data.Patronymic == nil:
+		log.BadRequest("data.patronymic is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Data.Tg == nil:
+		log.BadRequest("data.tg is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Data.Vk == nil:
+		log.BadRequest("data.vk is null")
+		return operations.NewCreateUserBadRequest()
 	}
 	//id, fail := uuid.Parse(params.Session)
 	//if fail != nil {
@@ -69,7 +84,8 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 	//	return operations.NewCreateUserBadRequest()
 	//}
 	//fmt.Println("createUser from", session.User().Name())
-	row, fail := c.users.New(*params.Data.Name, *params.Data.Password, *params.Data.Phone)
+	row, fail := c.users.New(*params.Data.Name, *params.Data.Surname, *params.Data.Patronymic, *params.Data.Email,
+		*params.Data.Vk, *params.Data.Tg, *params.Data.Nick, *params.Data.Password, *params.Data.Phone)
 	switch {
 	case fail == nil:
 		log.OK(strconv.FormatUint(row.ID(), 10))

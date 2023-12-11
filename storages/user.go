@@ -15,6 +15,12 @@ type (
 	User interface {
 		ID() UserID
 		Name() UserName
+		Surname() UserSurname
+		Patronymic() UserPatronymic
+		Email() UserEmail
+		Vk() UserVk
+		Tg() UserTg
+		Nick() UserNick
 		Password() UserPassword
 		Phone() UserPhone
 	}
@@ -27,6 +33,18 @@ type (
 
 	UserName = string
 
+	UserSurname = string
+
+	UserPatronymic = string
+
+	UserEmail = string
+
+	UserVk = string
+
+	UserTg = string
+
+	UserNick = string
+
 	UserNameExistError UserName
 
 	UserNameMissingError UserName
@@ -37,7 +55,8 @@ type (
 
 	Users interface {
 		ByName(name UserName) (User, error)
-		New(name UserName, password UserPassword, phone UserPhone) (User, error)
+		New(name UserName, surname UserSurname, patronymic UserPatronymic, email UserEmail, vk UserVk, tg UserTg,
+			nick UserNick, password UserPassword, phone UserPhone) (User, error)
 		List(skip uint64, count uint32) ([]User, error)
 	}
 )
