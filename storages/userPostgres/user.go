@@ -13,7 +13,7 @@ type (
 		db *sql.DB
 	}
 
-	StorageRow struct {
+	storageRow struct {
 		id       storages.UserID
 		name     storages.UserName
 		password storages.UserPassword
@@ -31,7 +31,7 @@ func (s Storage) ByName(name storages.UserName) (storages.User, error) {
 
 func (s Storage) New(name, password, phone string) (storages.User, error) {
 	row := s.db.QueryRow(newSql, name, password, phone)
-	result := StorageRow{name: name, password: password, phone: phone}
+	result := storageRow{name: name, password: password, phone: phone}
 	err := row.Scan(&result.id)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (s Storage) List(skip uint64, count uint32) ([]storages.User, error) {
 	}
 	result := make([]storages.User, 0, count)
 	for rows.Next() {
-		var row StorageRow
+		var row storageRow
 		err = rows.Scan(&row.id, &row.name, &row.password, &row.phone)
 		if err != nil {
 			return nil, err
@@ -56,10 +56,10 @@ func (s Storage) List(skip uint64, count uint32) ([]storages.User, error) {
 	return result, nil
 }
 
-func (r StorageRow) ID() storages.UserID { return r.id }
+func (r storageRow) ID() storages.UserID { return r.id }
 
-func (r StorageRow) Name() storages.UserName { return r.name }
+func (r storageRow) Name() storages.UserName { return r.name }
 
-func (r StorageRow) Password() storages.UserPassword { return r.password }
+func (r storageRow) Password() storages.UserPassword { return r.password }
 
-func (r StorageRow) Phone() storages.UserPhone { return r.phone }
+func (r storageRow) Phone() storages.UserPhone { return r.phone }

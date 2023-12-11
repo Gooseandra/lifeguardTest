@@ -8,6 +8,7 @@ import (
 	"os"
 	"swagger/handlers"
 	"swagger/services"
+	"swagger/storages/crewPostgres"
 	"swagger/storages/userPostgres"
 	"time"
 
@@ -53,14 +54,19 @@ func main() {
 
 	userStorage.New("root", "root", "123")
 
+	crewStorage := crewPostgres.NewStorage(db)
+
+	crewStorage.New(time.Now(), 1, "none")
+	log.Println(crewStorage.List(0, 100))
 	logService := services.NewLog()
 	userService := services.NewUsers(userStorage)
+	crewService := services.NewCrew(crewStorage)
 
 	sessionService := services.NewSessions(logService, userService, time.Hour)
 
 	//api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
 	api.CreateCrewHandler = handlers.NewCreateCrew(logService, &sessionService, crewService)
-	api.ListCrewHandler = handlers.NewListCrew(logService, &sessionService, crewSercvice)
+	api.ListCrewHandler = handlers.NewListCrew(logService, &sessionService, crewService)
 	api.LoginHandler = handlers.NewLogin(logService, &sessionService, userService)
 	api.CreateUserHandler = handlers.NewCreateUser(logService, &sessionService, userService)
 	api.GetUserHandler = handlers.NewGetUser(logService, &sessionService, userService)

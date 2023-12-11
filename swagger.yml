@@ -57,9 +57,11 @@ paths:
                 id:
                   type: integer
                   format: uint64
-                name:
+                timeStart:
                   type: string
-                phone:
+                leader:
+                  type: integer
+                comment:
                   type: string
         400:
           description: Bad request
