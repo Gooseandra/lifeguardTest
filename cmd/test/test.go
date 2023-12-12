@@ -68,14 +68,23 @@ func main() {
 	sessionService := services.NewSessions(logService, userService, time.Hour)
 
 	//api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
+	api.ListCallHandler = handlers.NewListCall(logService, &sessionService, callService)
 	api.CreateCallHandler = handlers.NewCreateCall(logService, &sessionService, callService)
+	api.UpdateCallHandler = handlers.NewUpdateCall(logService, &sessionService, callService)
+	api.GetCallHandler = handlers.NewGetCall(logService, &sessionService, callService)
+
+	api.UpdateCrewHandler = handlers.NewUpdateCrew(logService, &sessionService, crewService)
 	api.CreateCrewHandler = handlers.NewCreateCrew(logService, &sessionService, crewService)
 	api.ListCrewHandler = handlers.NewListCrew(logService, &sessionService, crewService)
-	api.LoginHandler = handlers.NewLogin(logService, &sessionService, userService)
+	api.GetCrewHandler = handlers.NewGetCrew(logService, &sessionService, crewService)
+
 	api.CreateUserHandler = handlers.NewCreateUser(logService, &sessionService, userService)
 	api.GetUserHandler = handlers.NewGetUser(logService, &sessionService, userService)
 	api.ListUsersHandler = handlers.NewListUser(logService, &sessionService, userService)
 	api.UpdateUserHandler = handlers.NewUpdateUser(logService, &sessionService, userService)
+	api.FiredUserHandler = handlers.NewFiredUser(logService, &sessionService, userService)
+
+	api.LoginHandler = handlers.NewLogin(logService, &sessionService, userService)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 

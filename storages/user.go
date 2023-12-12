@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"time"
 )
 
 const (
@@ -23,6 +24,8 @@ type (
 		Nick() UserNick
 		Password() UserPassword
 		Phone() UserPhone
+		Apply() *UserTime
+		Fired() *UserTime
 	}
 
 	UserById map[UserID]User
@@ -53,12 +56,17 @@ type (
 
 	UserPhone = string
 
+	UserTime = time.Time
+
 	Users interface {
 		ByName(name UserName) (User, error)
 		ByID(id UserID) (User, error)
 		New(name UserName, surname UserSurname, patronymic UserPatronymic, email UserEmail, vk UserVk, tg UserTg,
-			nick UserNick, password UserPassword, phone UserPhone) (User, error)
+			nick UserNick, password UserPassword, phone UserPhone, apply *UserTime) (User, error)
 		List(skip uint64, count uint32) ([]User, error)
+		Update(id UserID, name UserName, surname UserSurname, patronymic UserPatronymic, email UserEmail, vk UserVk,
+			tg UserTg, nick UserNick, phone UserPhone, apply *UserTime) (User, error)
+		Fired(id UserID, time UserTime) (User, error)
 	}
 )
 

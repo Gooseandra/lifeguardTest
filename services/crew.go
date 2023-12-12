@@ -17,7 +17,7 @@ func (c Crews) New(timeStart storages.CrewTime, leader storages.CrewLeader,
 	if err == nil {
 		return crew, nil
 	}
-	return nil, err
+	return nil, fmt.Errorf("crew serice: %w", err)
 }
 
 func (c Crews) List(skip uint64, count uint32) ([]storages.Crew, error) {
@@ -25,5 +25,22 @@ func (c Crews) List(skip uint64, count uint32) ([]storages.Crew, error) {
 	if err == nil {
 		return crew, nil
 	}
-	return nil, fmt.Errorf("user serice: %w", err)
+	return nil, fmt.Errorf("crew serice: %w", err)
+}
+
+func (c Crews) Update(id storages.CrewID, timeStart storages.CrewTime, timeFinish storages.CrewTime, leader storages.CrewLeader,
+	comment storages.CrewComment, roster storages.CrewRoster) (storages.Crew, error) {
+	crew, err := c.storage.Update(id, timeStart, timeFinish, leader, comment, roster)
+	if err == nil {
+		return crew, nil
+	}
+	return nil, fmt.Errorf("crew serice: %w", err)
+}
+
+func (c Crews) GetCrew(id storages.CrewID) (storages.Crew, error) {
+	crew, err := c.storage.ByID(id)
+	if err == nil {
+		return crew, nil
+	}
+	return nil, fmt.Errorf("crew serice: %w", err)
 }

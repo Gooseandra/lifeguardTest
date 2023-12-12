@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"strconv"
 	"swagger/restapi/operations"
 	"swagger/services"
+	"time"
 )
 
 type (
@@ -27,6 +27,7 @@ type (
 		users    *services.Users
 	}
 	UpdateUser struct{ user }
+	FiredUser  struct{ user }
 )
 
 func NewCreateUser(l *services.Log, s *services.Sessions, u *services.Users) CreateUser {
@@ -43,6 +44,27 @@ func NewListUser(l *services.Log, s *services.Sessions, u *services.Users) ListU
 
 func NewUpdateUser(l *services.Log, s *services.Sessions, u *services.Users) UpdateUser {
 	return UpdateUser{user: user{log: l, sessions: s, users: u}}
+}
+
+func NewFiredUser(l *services.Log, s *services.Sessions, u *services.Users) FiredUser {
+	return FiredUser{user: user{log: l, sessions: s, users: u}}
+}
+
+func (f FiredUser) Handle(params operations.FiredUserParams) middleware.Responder {
+	log := f.log.Func("firedUser")
+	time, err := time.Parse(time.DateTime, *params.Body.Fired)
+	if err != nil {
+		log.BadRequest("Invalid time format")
+		return operations.NewCreateCallBadRequest()
+	}
+	row, fail := f.users.Fired(params.ID, time)
+	if fail != nil {
+		log.NotFound(fail.Error())
+		return operations.NewFiredUserInternalServerError()
+	}
+	payload := &operations.FiredUserOKBody{ID: row.ID(), Fired: *params.Body.Fired}
+	log.OK(strconv.FormatUint(row.ID(), 10))
+	return operations.NewFiredUserOK().WithPayload(payload)
 }
 
 func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Responder {
@@ -84,8 +106,13 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 	//	return operations.NewCreateUserBadRequest()
 	//}
 	//fmt.Println("createUser from", session.User().Name())
+	apply, err := time.Parse(time.DateTime, params.Data.Apply)
+	if err != nil {
+		log.BadRequest("Invalid time format")
+		return operations.NewCreateCallBadRequest()
+	}
 	row, fail := c.users.New(*params.Data.Name, *params.Data.Surname, *params.Data.Patronymic, *params.Data.Email,
-		*params.Data.Vk, *params.Data.Tg, *params.Data.Nick, *params.Data.Password, *params.Data.Phone)
+		*params.Data.Vk, *params.Data.Tg, *params.Data.Nick, *params.Data.Password, *params.Data.Phone, &apply)
 	switch {
 	case fail == nil:
 		log.OK(strconv.FormatUint(row.ID(), 10))
@@ -130,13 +157,60 @@ func (l ListUsers) Handle(p operations.ListUsersParams) middleware.Responder {
 	}
 	payload := make([]*operations.ListUsersOKBodyItems0, len(list))
 	for index, item := range list {
-		payload[index] = &operations.ListUsersOKBodyItems0{ID: item.ID(), Name: item.Name(), Phone: item.Phone()}
+		payload[index] = &operations.ListUsersOKBodyItems0{ID: item.ID(), Name: item.Name(), Surname: item.Surname(),
+			Patronymic: item.Patronymic(), Email: item.Email(), Vk: item.Vk(), Tg: item.Tg(), Nick: item.Nick(),
+			Phone: item.Phone()}
+		if item.Apply() != nil {
+			payload[index].Apply = item.Apply().String()
+		}
+		if item.Fired() != nil {
+			payload[index].Fired = item.Fired().String()
+		}
 	}
 	log.OK(strconv.Itoa(len(list)))
 	return operations.NewListUsersOK().WithPayload(payload)
 }
 
-func (g UpdateUser) Handle(p operations.UpdateUserParams) middleware.Responder {
-	fmt.Println("UpdateUser", p.ID)
-	return operations.NewUpdateUserOK()
+func (u UpdateUser) Handle(params operations.UpdateUserParams) middleware.Responder {
+	log := u.log.Func("updateUser")
+	switch {
+	case params.Body.Name == nil:
+		log.BadRequest("data.name is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Body.Email == nil:
+		log.BadRequest("data.nick is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Body.Surname == nil:
+		log.BadRequest("data.surname is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Body.Patronymic == nil:
+		log.BadRequest("data.patronymic is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Body.Tg == nil:
+		log.BadRequest("data.tg is null")
+		return operations.NewCreateUserBadRequest()
+	case params.Body.Vk == nil:
+		log.BadRequest("data.vk is null")
+		return operations.NewCreateUserBadRequest()
+	}
+	apply, err := time.Parse(time.DateTime, *params.Body.Apply)
+	if err != nil {
+		log.BadRequest("Invalid time format")
+		return operations.NewCreateCallBadRequest()
+	}
+	row, fail := u.users.Update(params.ID, *params.Body.Name, *params.Body.Surname, *params.Body.Patronymic, *params.Body.Email,
+		*params.Body.Vk, *params.Body.Tg, *params.Body.Nick, *params.Body.Phone, &apply)
+	switch {
+	case fail == nil:
+		log.OK(strconv.FormatUint(row.ID(), 10))
+		return operations.NewCreateUserOK().WithPayload(row.ID())
+	case errors.Is(fail, services.ErrUserIdExist):
+		log.NotFound(fail.Error())
+		return operations.NewCreateUserNotFound()
+	case errors.Is(fail, services.ErrUserNameExist):
+		log.NotFound(fail.Error())
+		return operations.NewCreateUserNotFound()
+	}
+	log.InternalSerer(fail.Error())
+	return operations.NewCreateUserInternalServerError()
 }

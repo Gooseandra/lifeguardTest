@@ -61,13 +61,31 @@ func (u Users) List(s uint64, c uint32) ([]storages.User, error) {
 	return nil, fmt.Errorf("user serice: %w", err)
 }
 
+func (u Users) Update(id storages.UserID, name storages.UserName, surname storages.UserSurname, patronymic storages.UserPatronymic,
+	email storages.UserEmail, vk storages.UserVk, tg storages.UserTg, nick storages.UserNick,
+	phone storages.UserPhone, apply *storages.UserTime) (storages.User, error) {
+	user, err := u.storage.Update(id, name, surname, patronymic, email, vk, tg, nick, phone, apply)
+	if err == nil {
+		return user, nil
+	}
+	return nil, fmt.Errorf("user serice: %w", err)
+}
+
+func (u Users) Fired(id storages.UserID, time storages.UserTime) (storages.User, error) {
+	user, err := u.storage.Fired(id, time)
+	if err == nil {
+		return user, nil
+	}
+	return nil, fmt.Errorf("user serice: %w", err)
+}
+
 func (u Users) New(name storages.UserName, surname storages.UserSurname, patronymic storages.UserPatronymic,
 	email storages.UserEmail, vk storages.UserVk, tg storages.UserTg, nick storages.UserNick,
-	password storages.UserPassword, phone storages.UserPhone) (storages.User, error) {
+	password storages.UserPassword, phone storages.UserPhone, apply *storages.UserTime) (storages.User, error) {
 
 	var idExistError storages.UserIdExistError
 	var nameExistError storages.UserNameExistError
-	user, err := u.storage.New(name, surname, patronymic, email, vk, tg, nick, password, phone)
+	user, err := u.storage.New(name, surname, patronymic, email, vk, tg, nick, password, phone, apply)
 	if err == nil {
 		return user, nil
 	}

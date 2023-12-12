@@ -10,6 +10,44 @@ paths:
   /calls:
     get:
       operationId: listCall
+      parameters:
+        - name: count
+          in: query
+          type: integer
+          format: uint32
+          default: 100
+        - name: skip
+          in: query
+          type: integer
+          format: uint64
+          default: 0
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: uint64
+                timeStart:
+                  type: string
+                timeFinish:
+                  type: string
+                address:
+                  type: string
+                description:
+                  type: string
+                summingUp:
+                  type: string
+                title:
+                  type: string
+        400:
+          description: Bad request
+        500:
+          description: Unknown error
     post:
       operationId: createCall
       parameters:
@@ -23,16 +61,97 @@ paths:
                 type: string
               address:
                 type: string
-            required: [ timeStart, description, address ]
+              title:
+                type: string
+              crew:
+                type: integer
+                format: uint64
+            required: [ timeStart, description, address, title, crew ]
       responses:
         200:
           description: OK
           schema:
-            type: string
+            type: integer
+            format: uint64
         400:
           description: Bad request
         500:
           description: Unknown error
+  /calls/{id}:
+    get:
+      operationId: getCall
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+                format: uint64
+              description:
+                type: string
+              summingUp:
+                type: string
+              address:
+                type: string
+              timeStart:
+                type: string
+              timeFinish:
+                type: string
+              title:
+                type: string
+              crew:
+                type: integer
+                format: uint64
+        400:
+          description: Bad request
+        500:
+          description: Unknown error
+    post:
+      operationId: updateCall
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+        - name: body
+          in: body
+          schema:
+            properties:
+              timeStart:
+                type: string
+              timeFinish:
+                type: string
+              description:
+                type: string
+              summingUp:
+                type: string
+              address:
+                type: string
+              title:
+                type: string
+              crew:
+                type: integer
+                format: uint64
+            required: [timeStart, description, address, title, crew]
+      responses:
+        200:
+          description: OK
+          schema:
+            type: integer
+            format: uint64
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
+
   /crews:
     get:
       operationId: listCrew
@@ -129,6 +248,50 @@ paths:
                   items:
                     type: integer
                     format: uint64
+                calls:
+                  type: array
+                  items:
+                    type: integer
+                    format: uint64
+          400:
+            description: Bad request
+          500:
+            description: Unknown Error
+    post:
+      operationId: updateCrew
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+        - name: body
+          in: body
+          schema:
+            properties:
+              timeStart:
+                type: string
+              timeFinish:
+                type: string
+              leader:
+                type: integer
+                format: uint64
+              comment:
+                type: string
+              roster:
+                type: array
+                items:
+                  type: integer
+                  format: uint64
+            required: [timeStart, leader, roaster]
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
+
   /login:
     post:
       operationId: login
@@ -180,7 +343,25 @@ paths:
                   format: uint64
                 name:
                   type: string
+                surname:
+                  type: string
+                patronymic:
+                  type: string
+                nick:
+                  type: string
                 phone:
+                  type: string
+                vk:
+                  type: string
+                tg:
+                  type: string
+                email:
+                  type: string
+                privateData:
+                  type: string
+                fired:
+                  type: string
+                apply:
                   type: string
         400:
           description: плохой запрос
@@ -249,20 +430,80 @@ paths:
               email:
                 type: string
                 maxLength: 255
+    delete:
+      operationId: firedUser
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+        - name: body
+          in: body
+          schema:
+            properties:
+              fired:
+                type: string
+            required: [ fired ]
+      responses:
+        200:
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+                format: uint64
+              fired:
+                type: string
+        404:
+          description: Not Found
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
     post:
       operationId: updateUser
       parameters:
         - name: id
           in: path
-          type: string
+          type: integer
+          format: uint64
           required: true
         - name: body
           in: body
           schema:
-            $ref: "#/definitions/userDesc"
+            properties:
+              name:
+                type: string
+                maxLength: 255
+              phone:
+                type: string
+                maxLength: 11
+              surname:
+                type: string
+                maxLength: 255
+              patronymic:
+                type: string
+                maxLength: 255
+              nick:
+                type: string
+                maxLength: 255
+              vk:
+                type: string
+                maxLength: 255
+              tg:
+                type: string
+                maxLength: 255
+              email:
+                type: string
+                maxLength: 255
+              apply:
+                type: string
+                maxLength: 255
+            required: [ name, password, phone, surname, patronymic, nick, vk, tg, email, apply ]
       responses:
         200:
-          description: dddd
+          description: OK
 definitions:
   userDesc:
     properties:
@@ -291,6 +532,9 @@ definitions:
         type: string
         maxLength: 255
       email:
+        type: string
+        maxLength: 255
+      apply:
         type: string
         maxLength: 255
     required: [ name, password, phone, surname, patronymic, nick, vk, tg, email ]
