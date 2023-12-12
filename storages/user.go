@@ -55,6 +55,7 @@ type (
 
 	Users interface {
 		ByName(name UserName) (User, error)
+		ByID(id UserID) (User, error)
 		New(name UserName, surname UserSurname, patronymic UserPatronymic, email UserEmail, vk UserVk, tg UserTg,
 			nick UserNick, password UserPassword, phone UserPhone) (User, error)
 		List(skip uint64, count uint32) ([]User, error)

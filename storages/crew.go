@@ -9,7 +9,7 @@ type (
 		Finish() CrewTime
 		Leader() CrewLeader
 		Comment() CrewComment
-		Roaster() CrewRoaster
+		Roaster() CrewRoster
 	}
 
 	CrewID = uint64
@@ -20,11 +20,11 @@ type (
 
 	CrewComment = string
 
-	CrewRoaster = []int64
+	CrewRoster = []uint64
 
 	Crews interface {
 		ByTime(time CrewTime) (Crew, error)
-		New(start CrewTime, leader CrewLeader, comment CrewComment) (Crew, error)
+		New(start CrewTime, leader CrewLeader, comment CrewComment, roster CrewRoster) (Crew, error)
 		List(skip uint64, count uint32) ([]Crew, error)
 	}
 )

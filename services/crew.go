@@ -12,8 +12,8 @@ type Crews struct {
 func NewCrew(s storages.Crews) *Crews { return &Crews{storage: s} }
 
 func (c Crews) New(timeStart storages.CrewTime, leader storages.CrewLeader,
-	comment storages.CrewComment) (storages.Crew, error) {
-	crew, err := c.storage.New(timeStart, leader, comment)
+	comment storages.CrewComment, roster storages.CrewRoster) (storages.Crew, error) {
+	crew, err := c.storage.New(timeStart, leader, comment, roster)
 	if err == nil {
 		return crew, nil
 	}

@@ -19,26 +19,35 @@ type (
 		timeFinish storages.CrewTime
 		leader     storages.CrewLeader
 		comment    storages.CrewComment
-		roaster    storages.CrewRoaster
+		roster     storages.CrewRoster
 	}
 )
-
-//ByTime(time CrewTime) (Crew, error)
-//New(start CrewTime, leader CrewLeader, comment CrewComment) (Crew, error)
-//List(skip uint64, count uint32) ([]Crew, error)
 
 func (s Storage) ByTime(time storages.CrewTime) (storages.Crew, error) {
 	panic("Not Implement")
 }
 
 func (s Storage) New(start storages.CrewTime, leader storages.CrewLeader,
-	comment storages.CrewComment) (storages.Crew, error) {
-	row := s.db.QueryRow(crewNewSql, start, leader, comment)
-	result := storageRow{timeStart: start, leader: leader, comment: comment}
-	err := row.Scan(&result.id)
+	comment storages.CrewComment, roster storages.CrewRoster) (storages.Crew, error) {
+	tx, err := s.db.Begin()
 	if err != nil {
 		return nil, err
 	}
+	row := tx.QueryRow(crewNewSql, start, leader, comment)
+	result := storageRow{timeStart: start, leader: leader, comment: comment, roster: roster}
+	err = row.Scan(&result.id)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	for _, item := range roster {
+		_, err = tx.Exec(`insert into "day_crew_roster"("user", "day_crew")values($1,$2)`, item, result.id)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+	tx.Commit()
 	return result, nil
 }
 
@@ -50,7 +59,7 @@ func (s Storage) List(skip uint64, count uint32) ([]storages.Crew, error) {
 	result := make([]storages.Crew, 0, count)
 	for rows.Next() {
 		var row storageRow
-		err = rows.Scan(&row.id, &row.timeStart, &row.timeFinish, &row.leader, &row.comment, &row.roaster)
+		err = rows.Scan(&row.id, &row.timeStart, &row.timeFinish, &row.leader, &row.comment)
 		if err != nil {
 			return nil, err
 		}
@@ -73,4 +82,4 @@ func (r storageRow) Leader() storages.CrewLeader { return r.leader }
 
 func (r storageRow) Comment() storages.CrewComment { return r.comment }
 
-func (r storageRow) Roaster() storages.CrewRoaster { return r.roaster }
+func (r storageRow) Roaster() storages.CrewRoster { return r.roster }

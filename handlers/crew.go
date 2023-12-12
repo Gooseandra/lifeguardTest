@@ -47,12 +47,20 @@ func (c CreateCrew) Handle(params operations.CreateCrewParams) middleware.Respon
 		log.BadRequest("leader is null")
 		return operations.NewCreateUserBadRequest()
 	}
+	for _, item := range params.Body.Roster {
+		if item == *params.Body.Leader {
+			goto label
+		}
+	}
+	log.BadRequest("leader out of roaster")
+	return operations.NewCreateUserBadRequest()
+label:
 	timeStart, err := time.Parse(time.DateTime, *params.Body.TimeStart)
 	if err != nil {
 		log.BadRequest("Invalid time format")
 		return operations.NewCreateCrewBadRequest()
 	}
-	row, fail := c.crews.New(timeStart, *params.Body.Leader, params.Body.Comment)
+	row, fail := c.crews.New(timeStart, *params.Body.Leader, params.Body.Comment, params.Body.Roster)
 	switch {
 	case fail == nil:
 		log.OK(strconv.FormatUint(row.ID(), 10))
@@ -68,9 +76,9 @@ func (c CreateCrew) Handle(params operations.CreateCrewParams) middleware.Respon
 	return operations.NewCreateUserInternalServerError()
 }
 
-//func (g GetCrew) Handle(p operations.GetUserParams) middleware.Responder {
-//	panic("Not Implement")
-//}
+func (g GetCrew) Handle(p operations.GetUserParams) middleware.Responder {
+	panic("Not Implement")
+}
 
 func (l ListCrew) Handle(p operations.ListCrewParams) middleware.Responder {
 	log := l.log.Func("listCrew")

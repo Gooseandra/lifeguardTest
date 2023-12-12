@@ -45,6 +45,14 @@ func (u Users) ByName(n storages.UserName) (storages.User, error) {
 	return row, nil
 }
 
+func (u Users) ByID(id storages.UserID) (storages.User, error) {
+	users, err := u.storage.ByID(id)
+	if err == nil {
+		return users, nil
+	}
+	return nil, fmt.Errorf("user serice: %w", err)
+}
+
 func (u Users) List(s uint64, c uint32) ([]storages.User, error) {
 	users, err := u.storage.List(s, c)
 	if err == nil {

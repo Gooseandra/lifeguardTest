@@ -101,9 +101,16 @@ func (c CreateUser) Handle(params operations.CreateUserParams) middleware.Respon
 	return operations.NewCreateUserInternalServerError()
 }
 
-func (g GetUser) Handle(p operations.GetUserParams) middleware.Responder {
-	fmt.Println("GetUser", p.ID)
-	return operations.NewGetUserOK()
+func (g GetUser) Handle(params operations.GetUserParams) middleware.Responder {
+	log := g.log.Func("GetUser")
+	row, fail := g.users.ByID(params.ID)
+	if fail != nil {
+		log.InternalSerer(fail.Error())
+		return operations.NewListUsersInternalServerError()
+	}
+	payload := &operations.GetUserOKBody{ID: row.ID(), Name: row.Name(), Surname: row.Surname(),
+		Patronymic: row.Patronymic(), Email: row.Email(), Vk: row.Vk(), Tg: row.Tg(), Nick: row.Nick(), Phone: row.Phone()}
+	return operations.NewGetUserOK().WithPayload(payload)
 }
 
 func (l ListUsers) Handle(p operations.ListUsersParams) middleware.Responder {

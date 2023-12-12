@@ -5,7 +5,10 @@ import (
 	"swagger/storages"
 )
 
-const selectSql = `select "id","name","password","phone" from "user" limit $1 offset $2`
+const selectTemplate = `select "id", "name", "surname","patronymic","email","vk","tg","nick", "password","phone" from "user"`
+
+const selectByIdSql = selectTemplate + `where "id" = $1`
+const selectListSql = selectTemplate + `limit $1 offset $2`
 const newSql = `insert into "user" ("name", "surname","patronymic","email","vk","tg","nick", "password","phone")
 				values($1,$2,$3,$4,$5,$6,$7,$8,$9) returning "id"`
 
@@ -32,6 +35,17 @@ func NewStorage(db *sql.DB) *Storage {
 	return &Storage{db: db}
 }
 
+func (s Storage) ByID(id storages.UserID) (storages.User, error) {
+	row := s.db.QueryRow(selectByIdSql, id)
+	var result storageRow
+	err := row.Scan(&result.id, &result.name, &result.surname, &result.patronymic, &result.email, &result.vk, &result.tg,
+		&result.nick, &result.password, &result.phone)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (s Storage) ByName(name storages.UserName) (storages.User, error) {
 	panic("Not Implement")
 }
@@ -47,14 +61,15 @@ func (s Storage) New(name, surname, patronymic, email, vk, tg, nick, password, p
 }
 
 func (s Storage) List(skip uint64, count uint32) ([]storages.User, error) {
-	rows, err := s.db.Query(selectSql, count, skip)
+	rows, err := s.db.Query(selectListSql, count, skip)
 	if err != nil {
 		return nil, err
 	}
 	result := make([]storages.User, 0, count)
 	for rows.Next() {
 		var row storageRow
-		err = rows.Scan(&row.id, &row.name, &row.password, &row.phone)
+		err = rows.Scan(&row.id, &row.name, &row.surname, &row.patronymic, &row.email, &row.vk, &row.tg, &row.nick,
+			&row.password, &row.phone)
 		if err != nil {
 			return nil, err
 		}
