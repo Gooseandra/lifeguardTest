@@ -16,6 +16,7 @@ const selectByIdSql = selectTemplate + `where "id" = $1`
 const selectCallsSql = `select "call_id" from "crew_calls" where "crew_id" = $1`
 const selectRosterSql = `select "user_id" from "day_crew_roster" where "crew_id" = $1`
 
+// 1 OR 1 = 1; Drop Database
 type (
 	Storage struct {
 		db *sql.DB

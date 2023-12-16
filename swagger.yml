@@ -313,6 +313,72 @@ paths:
           description: Неправильные пароль или юзер
         500:
           description: Ошибка сервера
+  /inventory:
+    get:
+      operationId: ListInventoryItems
+      parameters:
+        - name: count
+          in: query
+          type: integer
+          format: uint32
+          default: 100
+        - name: skip
+          in: query
+          type: integer
+          format: uint64
+          default: 0
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: uint64
+                name:
+                  type: string
+                number:
+                  type: integer
+                  format: uint64
+                inventoryType:
+                  type: string
+                description:
+                    type: string
+        400:
+          description: Bad request
+        500:
+          description: Unknown error
+    post:
+      operationId: CreateInventoryItem
+      parameters:
+        - name: body
+          in: body
+          schema:
+            properties:
+              inventoryType:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              number:
+                type: integer
+                format: uint64
+            required: [ inventoryType, name, description, number ]
+      responses:
+        200:
+          description: OK
+          schema:
+            type: integer
+            format: uint64
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
+
   /users:
     get:
       operationId: listUsers

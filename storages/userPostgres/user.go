@@ -45,7 +45,7 @@ func (s Storage) ByID(id storages.UserID) (storages.User, error) {
 	row := s.db.QueryRow(selectByIdSql, id)
 	var result storageRow
 	err := row.Scan(&result.id, &result.name, &result.surname, &result.patronymic, &result.email, &result.vk, &result.tg,
-		&result.nick, &result.password, &result.phone)
+		&result.nick, &result.password, &result.phone, &result.apply)
 	if err != nil {
 		return nil, err
 	}

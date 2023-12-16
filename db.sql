@@ -106,3 +106,23 @@ create table "users_ranks"(
     rankId integer references ranks(id),
     userId integer references "user"(id)
 );
+
+create table "inventory"(
+    id serial primary key,
+    name varchar(50),
+    type integer references inventory
+);
+
+create table "inventory_instance"(
+    id serial primary key,
+    description varchar(200),
+    number integer unique
+)
+
+select
+    case when exists (select true from inventory where "name" = 'sss')
+            then ''
+         else (INSERT INTO inventory_type values ('sss'))
+        end;
+
+insert into inventory values ('sss')
