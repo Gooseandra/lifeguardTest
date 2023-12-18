@@ -11,7 +11,7 @@ const crewNewSql = `insert into "day_crew"("time_start", "leader", "comment")val
 const selectSql = selectTemplate + `limit $1 offset $2`
 const updateSql = `update "day_crew" set "time_start" = $1, "time_end" = $2, "leader" = $3, "comment" = $4 where "id" = $5`
 const newRosterSql = `insert into "day_crew_roster"("user_id", "crew_id")values($1,$2)`
-const deleteRosterSql = `delete from "day_crew_roster" where "day_crew" = $1`
+const deleteRosterSql = `delete from "day_crew_roster" where "crew_id" = $1`
 const selectByIdSql = selectTemplate + `where "id" = $1`
 const selectCallsSql = `select "call_id" from "crew_calls" where "crew_id" = $1`
 const selectRosterSql = `select "user_id" from "day_crew_roster" where "crew_id" = $1`
@@ -36,6 +36,8 @@ type (
 func (s Storage) ByTime(time storages.CrewTime) (storages.Crew, error) {
 	panic("Not Implement")
 }
+
+//TODO: исправить ошибку с time и null
 
 func (s Storage) ByID(id storages.CrewID) (storages.Crew, error) {
 	row := s.db.QueryRow(selectByIdSql, id)
@@ -126,6 +128,8 @@ func (s Storage) New(start storages.CrewTime, leader storages.CrewLeader,
 	tx.Commit()
 	return result, nil
 }
+
+//TODO: исправить ошибку с time и null
 
 func (s Storage) List(skip uint64, count uint32) ([]storages.Crew, error) {
 	rows, err := s.db.Query(selectSql, count, skip)

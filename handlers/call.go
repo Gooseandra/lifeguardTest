@@ -127,7 +127,7 @@ func (l ListCall) Handle(params operations.ListCallParams) middleware.Responder 
 	payload := make([]*operations.ListCallOKBodyItems0, len(list))
 	for index, item := range list {
 		payload[index] = &operations.ListCallOKBodyItems0{ID: item.ID(), Description: item.Description(),
-			Address: item.Address(), TimeStart: item.TimeStart().String()}
+			Address: item.Address(), TimeStart: item.TimeStart().String(), Title: item.Title()}
 		if item.SummingUp() != nil {
 			payload[index].SummingUp = *item.SummingUp()
 		}

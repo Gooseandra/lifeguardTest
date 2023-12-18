@@ -15,8 +15,10 @@ type (
 	}
 	CreateInventoryItem struct{ inventory }
 	ListInventory       struct{ inventory }
-	ByID                struct{ crew }
-	//UpdateCrew struct{ crew }
+	ByID                struct{ inventory }
+	Types               struct{ inventory }
+	UpdateInventory     struct{ inventory }
+	DeleteInventoryItem struct{ inventory }
 )
 
 func NewCreateInventoryItem(l *services.Log, s *services.Sessions, c *services.Inventories) CreateInventoryItem {
@@ -28,7 +30,19 @@ func NewListInventoryItem(l *services.Log, s *services.Sessions, c *services.Inv
 }
 
 func NewByIDInventoryItem(l *services.Log, s *services.Sessions, c *services.Inventories) ByID {
-	return ListInventory{inventory: inventory{log: l, sessions: s, inventories: c}}
+	return ByID{inventory: inventory{log: l, sessions: s, inventories: c}}
+}
+
+func NewInventoryTypes(l *services.Log, s *services.Sessions, c *services.Inventories) Types {
+	return Types{inventory: inventory{log: l, sessions: s, inventories: c}}
+}
+
+func NewUpdateInventoryItem(l *services.Log, s *services.Sessions, c *services.Inventories) UpdateInventory {
+	return UpdateInventory{inventory: inventory{log: l, sessions: s, inventories: c}}
+}
+
+func NewDeleteInventoryItem(l *services.Log, s *services.Sessions, c *services.Inventories) DeleteInventoryItem {
+	return DeleteInventoryItem{inventory: inventory{log: l, sessions: s, inventories: c}}
 }
 
 func (c CreateInventoryItem) Handle(params operations.CreateInventoryItemParams) middleware.Responder {
@@ -64,4 +78,67 @@ func (c ListInventory) Handle(params operations.ListInventoryItemsParams) middle
 			Number: item.UniqNum(), Description: item.InstanceDesc(), InventoryType: item.TypeName()}
 	}
 	return operations.NewListInventoryItemsOK().WithPayload(payload)
+}
+
+func (i ByID) Handle(params operations.GetInventoryItemParams) middleware.Responder {
+	log := i.log.Func("GetByIDInventoryItem")
+	row, err := i.inventories.ByID(params.ID)
+	if err != nil {
+		log.InternalSerer(err.Error())
+		return operations.NewCreateInventoryItemInternalServerError()
+	}
+	payload := &operations.GetInventoryItemOKBody{ID: row.ID(), Description: row.InstanceDesc(), Name: row.Name(),
+		InventoryType: row.TypeName(), UniqNum: row.UniqNum()}
+	return operations.NewGetInventoryItemOK().WithPayload(payload)
+}
+
+func (t Types) Handle(params operations.GetInventoryTypesParams) middleware.Responder {
+	log := t.log.Func("InventoryTypes")
+	row, err := t.inventories.GetInventoryTypes()
+	if err != nil {
+		log.InternalSerer(err.Error())
+		return operations.NewGetInventoryTypesInternalServerError()
+	}
+	payload := make([]*operations.GetInventoryTypesOKBodyItems0, len(row))
+	for index, item := range row {
+		payload[index] = &operations.GetInventoryTypesOKBodyItems0{TypeName: item}
+	}
+	return operations.NewGetInventoryTypesOK().WithPayload(payload)
+}
+
+func (u UpdateInventory) Handle(params operations.UpdateInventoryParams) middleware.Responder {
+	log := u.log.Func("UpdateInventory")
+	switch {
+	case params.Body.Name == nil:
+		log.BadRequest("name is null")
+		return operations.NewListUsersBadRequest()
+	case params.Body.Description == nil:
+		log.BadRequest("description is null")
+		return operations.NewListUsersBadRequest()
+	case params.Body.InventoryType == nil:
+		log.BadRequest("InventoryType is null")
+		return operations.NewListUsersBadRequest()
+	case params.Body.Number == nil:
+		log.BadRequest("UniqNum is null")
+		return operations.NewListUsersBadRequest()
+	}
+	row, err := u.inventories.Update(params.ID, *params.Body.Name, *params.Body.InventoryType, *params.Body.Description,
+		*params.Body.Number)
+	if err != nil {
+		log.InternalSerer(err.Error())
+		return operations.NewUpdateInventoryInternalServerError()
+	}
+	log.OK(strconv.FormatUint(row.ID(), 10))
+	return operations.NewUpdateInventoryOK().WithPayload(row.ID())
+}
+
+func (d DeleteInventoryItem) Handle(params operations.DeleteInventoryItemParams) middleware.Responder {
+	log := d.log.Func("DeleteInventory")
+	row, err := d.inventories.Delete(params.ID)
+	if err != nil {
+		log.InternalSerer(err.Error())
+		return operations.NewUpdateInventoryInternalServerError()
+	}
+	log.OK(strconv.FormatUint(row.ID(), 10))
+	return operations.NewUpdateInventoryOK().WithPayload(row.ID())
 }

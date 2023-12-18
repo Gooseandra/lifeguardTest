@@ -5,8 +5,15 @@ import (
 	"swagger/storages"
 )
 
+const selectTemplate = `select "id", "name", "type", "description", "uniqNum" from "inventory"`
+
 const newItemSql = `insert into "inventory"("name", "type", "description", "uniqNum")values($1,$2,$3,$4) returning "id"`
-const selectListSql = `select "id", "name", "type", "description", "uniqNum" from "inventory" limit $1 offset $2`
+const selectListSql = selectTemplate + `limit $1 offset $2`
+const selectByIdSql = selectTemplate + `where "id" = $1`
+const selectCrewsInventorySql = `select "id" form "crew_inventory" where item_id = $1`
+const selectTypesSql = `SELECT DISTINCT "type" FROM "inventory";`
+const updateInventorySql = `update "inventory" set "name" = $1, "type" = $2, "description" = $3, "uniqNum" = $4 where "id" = $5`
+const deleteInventoryItem = `delete from "inventory" where "id" = $1`
 
 type (
 	Storage struct {
@@ -21,6 +28,8 @@ type (
 		uniqNum     storages.IUniqNum
 	}
 )
+
+// TODO: сделать проверку существования уникального номера или как то с этим разобраться, конфликт в update, если не менять номер
 
 func NewStorage(db *sql.DB) *Storage {
 	return &Storage{db: db}
@@ -51,6 +60,55 @@ func (s Storage) List(count uint32, skip uint64) ([]storages.Inventory, error) {
 		}
 		result = append(result, row)
 	}
+	return result, nil
+}
+
+func (s Storage) ByID(id storages.IID) (storages.Inventory, error) {
+	row := s.db.QueryRow(selectByIdSql, id)
+	result := storageRow{}
+	err := row.Scan(&result.id, &result.name, &result.typeName, &result.description, &result.uniqNum)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s Storage) InventoryTypes() ([]storages.ITypeName, error) {
+	rows, err := s.db.Query(selectTypesSql)
+	if err != nil {
+		return nil, err
+	}
+	var types []storages.ITypeName
+	for rows.Next() {
+		var result storages.ITypeName
+		err = rows.Scan(&result)
+		if err != nil {
+			return nil, err
+		}
+		types = append(types, result)
+	}
+	return types, nil
+}
+
+func (s Storage) Update(id storages.IID, name storages.IName, iType storages.ITypeName,
+	description storages.IDescription, uniqNum storages.IUniqNum) (storages.Inventory, error) {
+	_, err := s.db.Exec(updateInventorySql, name, iType, description, uniqNum, id)
+	if err != nil {
+		return nil, err
+	}
+	result := storageRow{id: id}
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s Storage) Delete(id storages.IID) (storages.Inventory, error) {
+	_, err := s.db.Exec(deleteInventoryItem, id)
+	if err != nil {
+		return nil, err
+	}
+	result := storageRow{id: id}
 	return result, nil
 }
 

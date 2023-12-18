@@ -154,22 +154,22 @@ paths:
 
   /crews:
     get:
-      operationId: listCrew
+      operationId: listCrew #корень названия класса
       parameters:
-        - name: count
-          in: query
-          type: integer
+        - name: count #название параметра
+          in: query #где этот параметр расположен
+          type: integer #его тип
           format: uint32
-          default: 100
+          default: 100 #значение, если параметр не указан
         - name: skip
           in: query
           type: integer
           format: uint64
           default: 0
-      responses:
-        200:
-          description: OK
-          schema:
+      responses: #ответы
+        200: # всё ок
+          description: OK #просто описание, из него строится название класса
+          schema: # схема отвеных данных
             type: array
             items:
               type: object
@@ -195,7 +195,7 @@ paths:
           in: body
           schema:
             properties:
-              timeStart:
+              timeStart: #поле, которое будет отправляться в бади ({"timeStart": "123"})
                 type: string
               leader:
                 type: integer
@@ -207,7 +207,7 @@ paths:
                 items:
                   type: integer
                   format: uint64
-            required: [ timeStart, leader, roster ]
+            required: [ timeStart, leader, roster ] #обязательные поля
       responses:
         200:
           description: OK
@@ -378,7 +378,105 @@ paths:
           description: Bad request
         500:
           description: Unknown Error
-
+  /inventory/{id}:
+    delete:
+      operationId: deleteInventoryItem
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: integer
+            format: uint64
+        404:
+          description: Not Found
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
+    get:
+      operationId: getInventoryItem
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+                format: uint64
+              name:
+                type: string
+              inventoryType:
+                type: string
+              description:
+                type: string
+              uniqNum:
+                type: integer
+                format: uint64
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
+    post:
+      operationId: updateInventory
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: uint64
+          required: true
+        - name: body
+          in: body
+          schema:
+            properties:
+              name:
+                type: string
+              inventoryType:
+                type: string
+              description:
+                type: string
+              number:
+                type: integer
+                format: uint64
+            required: [ name, inventoryType, description, number ]
+      responses:
+        200:
+          description: OK
+          schema:
+            type: integer
+            format: uint64
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
+  /inventory/types:
+    get:
+      operationId: getInventoryTypes
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                  typeName:
+                    type: string
+        400:
+          description: Bad request
+        500:
+          description: Unknown Error
   /users:
     get:
       operationId: listUsers

@@ -28,5 +28,9 @@ type (
 	Inventories interface {
 		New(typeName ITypeName, name IName, description IDescription, uniqNum IUniqNum) (Inventory, error)
 		List(c uint32, s uint64) ([]Inventory, error)
+		ByID(id IID) (Inventory, error)
+		InventoryTypes() ([]ITypeName, error)
+		Update(id IID, name IName, iType ITypeName, description IDescription, uniqNum IUniqNum) (Inventory, error)
+		Delete(id IID) (Inventory, error)
 	}
 )

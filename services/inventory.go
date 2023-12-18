@@ -17,7 +17,7 @@ func (i Inventories) Create(typeName storages.ITypeName, name storages.IName,
 	if err == nil {
 		return inventory, nil
 	}
-	return nil, fmt.Errorf("inventory serice: %w", err)
+	return nil, fmt.Errorf("inventory service: %w", err)
 }
 
 func (i Inventories) List(c uint32, s uint64) ([]storages.Inventory, error) {
@@ -25,5 +25,38 @@ func (i Inventories) List(c uint32, s uint64) ([]storages.Inventory, error) {
 	if err == nil {
 		return inventory, nil
 	}
-	return nil, fmt.Errorf("inventory serice: %w", err)
+	return nil, fmt.Errorf("inventory service: %w", err)
+}
+
+func (i Inventories) ByID(id storages.IID) (storages.Inventory, error) {
+	inventory, err := i.storage.ByID(id)
+	if err == nil {
+		return inventory, nil
+	}
+	return nil, fmt.Errorf("inventory service: %w", err)
+}
+
+func (i Inventories) GetInventoryTypes() ([]storages.ITypeName, error) {
+	inventoryTypes, err := i.storage.InventoryTypes()
+	if err == nil {
+		return inventoryTypes, nil
+	}
+	return nil, fmt.Errorf("inventoryTypes service: %w", err)
+}
+
+func (i Inventories) Update(id storages.IID, name storages.IName,
+	iType storages.ITypeName, description storages.IDescription, uniqNum storages.IUniqNum) (storages.Inventory, error) {
+	inventory, err := i.storage.Update(id, name, iType, description, uniqNum)
+	if err == nil {
+		return inventory, nil
+	}
+	return nil, fmt.Errorf("inventoryTypes service: %w", err)
+}
+
+func (i Inventories) Delete(id storages.IID) (storages.Inventory, error) {
+	inventory, err := i.storage.Delete(id)
+	if err == nil {
+		return inventory, nil
+	}
+	return nil, fmt.Errorf("inventoryTypes service: %w", err)
 }

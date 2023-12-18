@@ -71,6 +71,10 @@ func main() {
 	sessionService := services.NewSessions(logService, userService, time.Hour)
 
 	//api.CreateEventHandler = handlers.NewCreateEvent(logService, &sessionService, userService)
+	api.DeleteInventoryItemHandler = handlers.NewDeleteInventoryItem(logService, &sessionService, inventoryService)
+	api.UpdateInventoryHandler = handlers.NewUpdateInventoryItem(logService, &sessionService, inventoryService)
+	api.GetInventoryTypesHandler = handlers.NewInventoryTypes(logService, &sessionService, inventoryService)
+	api.GetInventoryItemHandler = handlers.NewByIDInventoryItem(logService, &sessionService, inventoryService)
 	api.CreateInventoryItemHandler = handlers.NewCreateInventoryItem(logService, &sessionService, inventoryService)
 	api.ListInventoryItemsHandler = handlers.NewListInventoryItem(logService, &sessionService, inventoryService)
 
